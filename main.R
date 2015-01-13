@@ -2,12 +2,13 @@
 ## January 12 2015
 
 ## Lesson 6 Exercise: Find out which city in the Netherlands is the greenest.
-rm(list=ls())
+
 ## Load packages and source functions.
 library(raster)
 library(rgdal)
 library(downloader)
 library(maptools)
+library(rgeos)
 
 ## Load data.
 
@@ -32,15 +33,10 @@ modisBrick <- brick(modisFiles)
 citiesNDVI <- suppressWarnings(extract(modisBrick, boundariesNL, fun=mean, na.rm=T, match.ID=F, sp=T))
 citiesNDVI$Annual <- rowMeans(citiesNDVI@data[15:26], na.rm=T)
 
-# citiesNDVI$Annual <- suppressWarnings(extract(mean(modisBrick), citiesNL, fun=mean, na.rm=T, match.ID=F, sp=T))
-
 # Extract mean NDVI per province for time periods.
 provincesAgg <- aggregate(citiesNDVI@data[15:27], list(citiesNDVI$NAME_1), mean)
 provincesUnion <- unionSpatialPolygons(citiesNDVI, citiesNDVI$NAME_1)
 provincesNDVI <- SpatialPolygonsDataFrame(provincesUnion, provincesAgg, match.ID=F)
-
-# provincesNDVI <- suppressWarnings(extract(modisBrick, boundariesNL, fun=mean, na.rm=T, match.ID=F, sp=T))
-# provincesNDVI$Annual <- rowMeans(provincesNDVI@data[13:24], na.rm=T)
 
 # Greenest city calculation.
 cityJan <- subset(citiesNDVI, citiesNDVI$January == max(citiesNDVI$January), na.rm=T)
